@@ -63,11 +63,11 @@ public class UserController {
   }
 
   @PutMapping(value = "/users")
-  public ResponseEntity<?> updateUser(@RequestBody CustomUser user) {
+  public ResponseEntity<?> updateUser(@RequestBody CustomUser user){
       ErrorResponseDTO errorResponseDTO =
               userService.dataCorrectnessCheck(user);
       if (errorResponseDTO.isErrorsPresent()) {
-          return ResponseEntity.badRequest().body(errorResponseDTO);
+          return ResponseEntity.badRequest().body(errorResponseDTO.getErrorMessages());
       } else {
         return userService.update(user)
                 ? new ResponseEntity<>(HttpStatus.OK)

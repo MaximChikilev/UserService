@@ -10,7 +10,6 @@ import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneId;
@@ -26,7 +25,6 @@ public class UserService {
 
   public UserService(UserRepository userRepository) {
     this.userRepository = userRepository;
-    this.permissibleAge = permissibleAge;
   }
 
   @Transactional
@@ -58,7 +56,7 @@ public class UserService {
 
   @Transactional
   public CustomUser getUserById(Long id) {
-    return userRepository.findById(id).get();
+    return userRepository.findById(id).orElse(null);
   }
 
   @Transactional
@@ -67,8 +65,11 @@ public class UserService {
   }
 
   public ErrorResponseDTO dataCorrectnessCheck(UserDetails user) {
-
     ErrorResponseDTO errorResponse = new ErrorResponseDTO();
+    if (user == null) {
+      errorResponse.addErrorMessage(UserDataErrors.USER_NULL.getTitle());
+      return errorResponse;
+    }
     if (!isEmailCorrect(user.getEmail())) {
       errorResponse.addErrorMessage(UserDataErrors.EMAIL.getTitle());
     }
@@ -78,12 +79,17 @@ public class UserService {
     if ((user.getLastName() == null) || (user.getLastName().isEmpty())) {
       errorResponse.addErrorMessage(UserDataErrors.LASTNAME.getTitle());
     }
-    if (!isUserAdult(user.getBirthday())) {
-      errorResponse.addErrorMessage(UserDataErrors.DATE_YOUNG_USER.getTitle() + permissibleAge);
+    if (user.getBirthday() != null) {
+      if (!isUserAdult(user.getBirthday(), permissibleAge)) {
+        errorResponse.addErrorMessage(UserDataErrors.DATE_YOUNG_USER.getTitle() + permissibleAge);
+      }
+      if (isDateInFuture(user.getBirthday())) {
+        errorResponse.addErrorMessage(UserDataErrors.DATE_FUTURE.getTitle());
+      }
+    } else {
+      errorResponse.addErrorMessage(UserDataErrors.DATE_NULL.getTitle());
     }
-    if (isDateInFuture(user.getBirthday())) {
-      errorResponse.addErrorMessage(UserDataErrors.DATE_FUTURE.getTitle());
-    }
+
     return errorResponse;
   }
 
@@ -91,7 +97,7 @@ public class UserService {
     return (EmailValidator.getInstance().isValid(email));
   }
 
-  private boolean isUserAdult(Date dateOfBirth) {
+  private boolean isUserAdult(Date dateOfBirth, int permissibleAge) {
     return getYearsBetweenDateAndNow(dateOfBirth) >= permissibleAge;
   }
 
@@ -106,7 +112,7 @@ public class UserService {
     return period.getYears();
   }
 
-  public CustomUser getCustomUserFromDTO(UserDTO userDTO) {
+  private CustomUser getCustomUserFromDTO(UserDTO userDTO) {
     return CustomUser.builder()
         .email(userDTO.getEmail())
         .firstName(userDTO.getFirstName())

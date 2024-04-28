@@ -1,7 +1,5 @@
 package com.example.userservice.entity;
 
-import com.example.userservice.deserializer.CustomDateDeserializer;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -24,7 +22,6 @@ public class CustomUser implements UserDetails {
     private String email;
     private String firstName;
     private String lastName;
-    @JsonDeserialize(using = CustomDateDeserializer.class)
     private Date birthday;
     private String address;
     private String phoneNumber;

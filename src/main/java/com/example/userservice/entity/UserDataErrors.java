@@ -6,7 +6,9 @@ public enum UserDataErrors {
     LASTNAME ("Last name cannot be empty"),
     DATE_FORMAT ("Incorrect date format"),
     DATE_FUTURE ("Date cannot be in future"),
-    DATE_YOUNG_USER ("User cannot be younger than :");
+    DATE_YOUNG_USER ("User cannot be younger than :"),
+    DATE_NULL("Date cannot be null"),
+    USER_NULL("User cannot be empty");
     private final String title;
 
     UserDataErrors(String title) {
